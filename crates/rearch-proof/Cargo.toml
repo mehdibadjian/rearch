@@ -12,6 +12,8 @@ serde_json.workspace = true
 anyhow.workspace = true
 askama.workspace = true
 chrono.workspace = true
+quick-xml.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+

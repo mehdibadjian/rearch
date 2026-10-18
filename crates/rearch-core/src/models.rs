@@ -109,3 +109,39 @@ pub struct HardenApproval {
     #[serde(default)]
     pub timestamp: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct EvidenceRow {
+    pub question_id: String,
+    pub epistemic_tier: EpistemicTier,
+    pub statement: String,
+    pub citations: Vec<String>,
+}
+
+impl EpistemicTier {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            EpistemicTier::Observation => "OBSERVATION",
+            EpistemicTier::Derivation => "DERIVATION",
+            EpistemicTier::Inference => "INFERENCE",
+            EpistemicTier::Unknown => "UNKNOWN",
+        }
+    }
+}
+
+impl EvidenceRow {
+    pub fn to_markdown_row(&self) -> String {
+        let cites = if self.citations.is_empty() {
+            "TBD".to_string()
+        } else {
+            self.citations.join(", ")
+        };
+        format!(
+            "| **{}** | `{}` | {} | {} |",
+            self.question_id,
+            self.epistemic_tier.as_str(),
+            self.statement,
+            cites
+        )
+    }
+}

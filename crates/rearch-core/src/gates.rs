@@ -215,3 +215,26 @@ pub fn verify_legacy_unmodified_at(base_dir: &Path, slug: &str) -> Result<()> {
 pub fn verify_legacy_unmodified(slug: &str) -> Result<()> {
     verify_legacy_unmodified_at(Path::new("."), slug)
 }
+
+/// Enforces REA Law 2 (Smallest Useful Inventory First):
+/// Blocks deep function decompilation or full-bundle AST dumps until analysis/<slug>/map.json is populated.
+pub fn verify_inventory_populated_at(base_dir: &Path, slug: &str) -> Result<()> {
+    let map_path = base_dir.join("analysis").join(slug).join("map.json");
+    if !map_path.exists() {
+        bail!(
+            "REA LAW 2 VIOLATION (Smallest Inventory First): analysis/{slug}/map.json not found. Populate top-level inventory before deep inspection."
+        );
+    }
+    let content = fs::read_to_string(&map_path)?;
+    let trimmed = content.trim();
+    if trimmed.is_empty() || trimmed == "{}" {
+        bail!(
+            "REA LAW 2 VIOLATION (Smallest Inventory First): analysis/{slug}/map.json is empty. Populate top-level inventory before deep inspection."
+        );
+    }
+    Ok(())
+}
+
+pub fn verify_inventory_populated(slug: &str) -> Result<()> {
+    verify_inventory_populated_at(Path::new("."), slug)
+}

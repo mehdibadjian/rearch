@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
-use rearch_core::gates::compute_legacy_digest;
+use rearch_core::gates::{compute_legacy_digest, verify_gate_2_reviewed, verify_gate_3_signed};
 use rearch_core::models::PreflightAnswers;
+use rearch_proof::report::render_html_report;
 use std::{fs, path::Path};
 
 pub fn run_intent(slug: &str) -> Result<()> {
@@ -15,6 +16,7 @@ pub fn run_intent(slug: &str) -> Result<()> {
     } else {
         println!("INTENT.md already exists for target slug: {slug}");
     }
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
@@ -60,6 +62,7 @@ pub fn run_preflight(slug: &str, source: Option<&str>) -> Result<()> {
     } else {
         println!("Preflight already exists at {}", preflight_path.display());
     }
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
@@ -74,6 +77,7 @@ pub fn run_assess(slug: &str) -> Result<()> {
         fs::write(&evidence_path, template)?;
         println!("Initialized {}", evidence_path.display());
     }
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
@@ -91,6 +95,7 @@ pub fn run_map(slug: &str) -> Result<()> {
         fs::write(&map_path, serde_json::to_string_pretty(&default_map)?)?;
         println!("Generated {}", map_path.display());
     }
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
@@ -98,12 +103,14 @@ pub fn run_extract_rules(slug: &str) -> Result<()> {
     let rules_dir = Path::new("analysis").join(slug).join("rules");
     fs::create_dir_all(&rules_dir)?;
     println!("Rules directory initialized at {}", rules_dir.display());
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
 pub fn run_review(slug: &str) -> Result<()> {
-    rearch_core::gates::verify_gate_2_reviewed(slug)?;
+    verify_gate_2_reviewed(slug)?;
     println!("Gate 2 Review complete: All disputed rule cards have been resolved for {slug}");
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
@@ -118,6 +125,46 @@ pub fn run_brief(slug: &str) -> Result<()> {
         fs::write(&brief_path, template)?;
         println!("Created draft steering brief at {}", brief_path.display());
     }
+    let _ = render_html_report(slug)?;
+    Ok(())
+}
+
+pub fn run_sign(slug: &str) -> Result<()> {
+    let analysis_dir = Path::new("analysis").join(slug);
+    fs::create_dir_all(&analysis_dir)?;
+    let brief_path = analysis_dir.join("BRIEF.md");
+    if brief_path.exists() {
+        let content = fs::read_to_string(&brief_path)?;
+        let updated = content.replace("STATUS: DRAFT", "STATUS: SIGNED_BY_HUMAN");
+        let final_content = if updated.contains("STATUS: SIGNED_BY_HUMAN") {
+            updated
+        } else {
+            format!("{content}\nSTATUS: SIGNED_BY_HUMAN\n")
+        };
+        fs::write(&brief_path, final_content)?;
+    } else {
+        fs::write(
+            &brief_path,
+            format!("# Modernization Steering Brief: {slug}\n\nSTATUS: SIGNED_BY_HUMAN\n"),
+        )?;
+    }
+    println!(
+        "Signed Steering Brief at {} (Gate 3 unlocked)",
+        brief_path.display()
+    );
+    let _ = render_html_report(slug)?;
+    Ok(())
+}
+
+pub fn run_build_stage(slug: &str, mode: &str) -> Result<()> {
+    verify_gate_3_signed(slug)?;
+    let modern_dir = Path::new("modernized").join(slug);
+    fs::create_dir_all(&modern_dir)?;
+    println!(
+        "Initialized Stage 6 ({mode}) workspace at {}",
+        modern_dir.display()
+    );
+    let _ = render_html_report(slug)?;
     Ok(())
 }
 
@@ -138,5 +185,6 @@ pub fn run_harden(slug: &str) -> Result<()> {
         fs::write(&approved_path, serde_json::to_string_pretty(&content)?)?;
         println!("Created hardening artifacts in {}", analysis_dir.display());
     }
+    let _ = render_html_report(slug)?;
     Ok(())
 }

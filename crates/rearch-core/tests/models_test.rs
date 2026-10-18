@@ -95,3 +95,23 @@ fn test_rule_card_roundtrip() {
         VerificationStatus::Confirmed
     );
 }
+
+#[test]
+fn test_evidence_row_roundtrip_and_markdown() {
+    let row = EvidenceRow {
+        question_id: "Q-01".to_string(),
+        epistemic_tier: EpistemicTier::Observation,
+        statement: "Auth route uses RS256 JWT validation".to_string(),
+        citations: vec!["legacy/auth.rs:42".to_string()],
+    };
+
+    let md_line = row.to_markdown_row();
+    assert_eq!(
+        md_line,
+        "| **Q-01** | `OBSERVATION` | Auth route uses RS256 JWT validation | legacy/auth.rs:42 |"
+    );
+
+    let json = serde_json::to_string(&row).unwrap();
+    let parsed: EvidenceRow = serde_json::from_str(&json).unwrap();
+    assert_eq!(parsed, row);
+}

@@ -235,3 +235,25 @@ fn test_legacy_immutability_verification() {
     assert!(res.is_err());
     assert!(res.unwrap_err().to_string().contains("MUTATION DETECTED"));
 }
+
+#[test]
+fn test_smallest_inventory_first_gate() {
+    let temp = tempdir().unwrap();
+    let analysis_dir = temp.path().join("analysis/my-service");
+    fs::create_dir_all(&analysis_dir).unwrap();
+
+    // Missing map.json
+    assert!(verify_inventory_populated_at(temp.path(), "my-service").is_err());
+
+    // Empty map.json
+    fs::write(analysis_dir.join("map.json"), "{}").unwrap();
+    assert!(verify_inventory_populated_at(temp.path(), "my-service").is_err());
+
+    // Populated map.json
+    fs::write(
+        analysis_dir.join("map.json"),
+        r#"{"slug": "my-service", "modules": ["auth"]}"#,
+    )
+    .unwrap();
+    assert!(verify_inventory_populated_at(temp.path(), "my-service").is_ok());
+}

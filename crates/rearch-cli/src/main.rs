@@ -5,7 +5,7 @@ use rearch_cli::{bootstrap, commands, loop_runner};
 #[derive(Parser)]
 #[command(
     name = "rearch",
-    version = "1.0",
+    version = "1.1",
     about = "Autonomous REA & Code-Modernization Engine"
 )]
 struct Cli {
@@ -42,10 +42,27 @@ enum Commands {
     Brief {
         slug: String,
     },
+    Sign {
+        slug: String,
+    },
+    Uplift {
+        slug: String,
+    },
+    Transform {
+        slug: String,
+    },
+    Reimagine {
+        slug: String,
+    },
+    Verify {
+        slug: String,
+    },
     LoopStep {
         slug: String,
         #[arg(long)]
-        window: String,
+        window: Option<String>,
+        #[arg(index = 2)]
+        positional_window: Option<String>,
         #[arg(long, default_value_t = 15)]
         max_iterations: u32,
     },
@@ -69,20 +86,28 @@ async fn main() -> Result<()> {
         Commands::ExtractRules { slug } => commands::run_extract_rules(&slug)?,
         Commands::Review { slug } => commands::run_review(&slug)?,
         Commands::Brief { slug } => commands::run_brief(&slug)?,
-        Commands::LoopStep {
-            slug,
-            window,
-            max_iterations,
-        } => {
-            loop_runner::execute_loop_step(&slug, &window, max_iterations)?;
-        }
-        Commands::ProofPack { slug } => {
+        Commands::Sign { slug } => commands::run_sign(&slug)?,
+        Commands::Uplift { slug } => commands::run_build_stage(&slug, "uplift")?,
+        Commands::Transform { slug } => commands::run_build_stage(&slug, "transform")?,
+        Commands::Reimagine { slug } => commands::run_build_stage(&slug, "reimagine")?,
+        Commands::Verify { slug } | Commands::ProofPack { slug } => {
             let report = rearch_proof::verifier::run_proof_pack(&slug)?;
             rearch_proof::report::render_html_report(&slug)?;
             println!(
                 "Proof Pack Verdict: {:?} ({})",
                 report.verdict, report.details
             );
+        }
+        Commands::LoopStep {
+            slug,
+            window,
+            positional_window,
+            max_iterations,
+        } => {
+            let win = window
+                .or(positional_window)
+                .unwrap_or_else(|| "discover".to_string());
+            loop_runner::execute_loop_step(&slug, &win, max_iterations)?;
         }
         Commands::Harden { slug } => commands::run_harden(&slug)?,
     }
