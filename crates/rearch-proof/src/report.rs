@@ -21,10 +21,19 @@ pub fn render_html_report_at(base_dir: &Path, slug: &str) -> Result<String> {
             val["total_tests"].as_u64().unwrap_or(0),
             val["passed_tests"].as_u64().unwrap_or(0),
             val["failed_tests"].as_u64().unwrap_or(0),
-            val["details"].as_str().unwrap_or("No details available").to_string(),
+            val["details"]
+                .as_str()
+                .unwrap_or("No details available")
+                .to_string(),
         )
     } else {
-        ("PENDING".to_string(), 0, 0, 0, "Proof pack not yet executed".to_string())
+        (
+            "PENDING".to_string(),
+            0,
+            0,
+            0,
+            "Proof pack not yet executed".to_string(),
+        )
     };
 
     // Read rule cards
@@ -56,7 +65,7 @@ pub fn render_html_report_at(base_dir: &Path, slug: &str) -> Result<String> {
 
     // Color banner based on verdict
     let badge_color = match verdict_str.as_str() {
-        "PROVEN" => "#10b981",       // green
+        "PROVEN" => "#10b981",        // green
         "PARTLY PROVEN" => "#3b82f6", // blue
         "NOT PROVEN" => "#ef4444",    // red
         _ => "#6b7280",               // gray

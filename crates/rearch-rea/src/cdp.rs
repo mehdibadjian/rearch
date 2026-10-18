@@ -60,7 +60,9 @@ impl CdpManager {
 
     pub fn is_alive(&self) -> bool {
         // Simple TCP connection or HTTP probe to endpoint
-        if let Ok(resp) = std::net::TcpStream::connect(format!("{}:{}", self.config.host, self.config.port)) {
+        if let Ok(resp) =
+            std::net::TcpStream::connect(format!("{}:{}", self.config.host, self.config.port))
+        {
             drop(resp);
             true
         } else {

@@ -18,9 +18,11 @@ fn test_cdp_config_defaults() {
 
 #[test]
 fn test_cdp_config_custom_port() {
-    let mut config = CdpConfig::default();
-    config.port = 9333;
-    config.headless = false;
+    let config = CdpConfig {
+        port: 9333,
+        headless: false,
+        ..Default::default()
+    };
     assert_eq!(config.endpoint_url(), "http://127.0.0.1:9333/json/version");
 
     let flags = config.to_command_args(PathBuf::from("/tmp/chrome-profile-custom"));

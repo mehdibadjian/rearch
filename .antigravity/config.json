@@ -1,0 +1,26 @@
+{
+  "name": "rearch",
+  "version": "1.0.0",
+  "verifier": {
+    "command": "cargo",
+    "args": ["run", "--bin", "rearch", "--", "loop-step"]
+  },
+  "agents": {
+    "architecture-critic": {
+      "path": ".agents/agents/architecture-critic.md",
+      "mode": "read-only"
+    },
+    "rule-extractor": {
+      "path": ".agents/agents/rule-extractor.md",
+      "mode": "author"
+    },
+    "rule-verifier": {
+      "path": ".agents/agents/rule-verifier.md",
+      "mode": "auditor"
+    },
+    "code-simplifier": {
+      "path": ".agents/agents/code-simplifier.md",
+      "mode": "refactor"
+    }
+  }
+}

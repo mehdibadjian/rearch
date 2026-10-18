@@ -86,6 +86,12 @@ fn test_rule_card_roundtrip() {
     let deserialized: RuleCard = serde_json::from_str(&serialized).unwrap();
     assert_eq!(deserialized.rule_id, "RULE-AUTH-001");
     assert_eq!(deserialized.bdd.then, "return HTTP 401 Unauthorized");
-    assert_eq!(deserialized.provenance.epistemic_tier, EpistemicTier::Observation);
-    assert_eq!(deserialized.verification.second_agent_status, VerificationStatus::Confirmed);
+    assert_eq!(
+        deserialized.provenance.epistemic_tier,
+        EpistemicTier::Observation
+    );
+    assert_eq!(
+        deserialized.verification.second_agent_status,
+        VerificationStatus::Confirmed
+    );
 }

@@ -55,7 +55,11 @@ fn test_render_html_report() {
             human_review_status: VerificationStatus::Confirmed,
         },
     };
-    fs::write(rules_dir.join("rule-01.json"), serde_json::to_string(&card).unwrap()).unwrap();
+    fs::write(
+        rules_dir.join("rule-01.json"),
+        serde_json::to_string(&card).unwrap(),
+    )
+    .unwrap();
 
     let html = render_html_report_at(temp.path(), "sample").unwrap();
     assert!(html.contains("Modernization Proof Report: sample"));

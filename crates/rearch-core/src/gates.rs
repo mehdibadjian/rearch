@@ -1,4 +1,6 @@
-use crate::models::{Divergence, HardenApproval, PreflightAnswers, ProofVerdictRecord, RuleCard, VerificationStatus};
+use crate::models::{
+    Divergence, HardenApproval, PreflightAnswers, ProofVerdictRecord, RuleCard, VerificationStatus,
+};
 use anyhow::{bail, Context, Result};
 use sha2::{Digest, Sha256};
 use std::{fs, path::Path};
@@ -82,8 +84,8 @@ pub fn verify_gate_4_divergences_at(base_dir: &Path, slug: &str) -> Result<()> {
         return Ok(());
     }
     let content = fs::read_to_string(&divergences_path)?;
-    let divs: Vec<Divergence> = serde_json::from_str(&content)
-        .context("Failed to parse accepted_divergences.json")?;
+    let divs: Vec<Divergence> =
+        serde_json::from_str(&content).context("Failed to parse accepted_divergences.json")?;
 
     for div in divs {
         if !div.approved_by_human {
@@ -111,8 +113,8 @@ pub fn verify_gate_5_proof_signed_at(base_dir: &Path, slug: &str) -> Result<()> 
         bail!("GATE 5 VIOLATION: verdict.json not found in proof directory.");
     }
     let content = fs::read_to_string(&verdict_path)?;
-    let record: ProofVerdictRecord = serde_json::from_str(&content)
-        .context("Failed to parse verdict.json in Gate 5 check")?;
+    let record: ProofVerdictRecord =
+        serde_json::from_str(&content).context("Failed to parse verdict.json in Gate 5 check")?;
 
     if !record.signed_by_human {
         bail!("GATE 5 VIOLATION: Proof Pack verdict has not been signed off by a human (signed_by_human: false).");
@@ -134,8 +136,8 @@ pub fn verify_gate_6_harden_signed_at(base_dir: &Path, slug: &str) -> Result<()>
         bail!("GATE 6 VIOLATION: harden_approved.json not found. Hardening patch must be human reviewed and signed.");
     }
     let content = fs::read_to_string(&harden_path)?;
-    let approval: HardenApproval = serde_json::from_str(&content)
-        .context("Failed to parse harden_approved.json")?;
+    let approval: HardenApproval =
+        serde_json::from_str(&content).context("Failed to parse harden_approved.json")?;
 
     if !approval.approved_by_human {
         bail!("GATE 6 VIOLATION: Hardening patch not approved by human.");
@@ -192,7 +194,10 @@ pub fn verify_legacy_unmodified_at(base_dir: &Path, slug: &str) -> Result<()> {
     if let Some(expected_digest) = answers.legacy_sha256 {
         let legacy_path = base_dir.join("legacy").join(slug);
         if !legacy_path.exists() {
-            bail!("LEGACY IMMUTABILITY VIOLATION: legacy/{} was removed!", slug);
+            bail!(
+                "LEGACY IMMUTABILITY VIOLATION: legacy/{} was removed!",
+                slug
+            );
         }
         let current_digest = compute_legacy_digest(&legacy_path)?;
         if current_digest != expected_digest {

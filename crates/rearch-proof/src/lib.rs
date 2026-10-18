@@ -1,2 +1,2 @@
-pub mod verifier;
 pub mod report;
+pub mod verifier;

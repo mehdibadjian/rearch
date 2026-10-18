@@ -8,7 +8,10 @@ fn test_gate_1_fails_when_preflight_missing() {
     let temp = tempdir().unwrap();
     let res = verify_gate_1_locked_at(temp.path(), "my-service");
     assert!(res.is_err());
-    assert!(res.unwrap_err().to_string().contains("preflight.json not found"));
+    assert!(res
+        .unwrap_err()
+        .to_string()
+        .contains("preflight.json not found"));
 }
 
 #[test]
@@ -77,7 +80,10 @@ fn test_gate_2_disputed_rules_must_be_human_reviewed() {
 
     let res = verify_gate_2_reviewed_at(temp.path(), "my-service");
     assert!(res.is_err());
-    assert!(res.unwrap_err().to_string().contains("Disputed rule RULE-01 has not been human confirmed"));
+    assert!(res
+        .unwrap_err()
+        .to_string()
+        .contains("Disputed rule RULE-01 has not been human confirmed"));
 
     // Now mark human confirmed
     let mut reviewed_card = unreviewed_card;
@@ -108,7 +114,10 @@ fn test_gate_3_requires_signed_brief() {
     .unwrap();
     let res = verify_gate_3_signed_at(temp.path(), "my-service");
     assert!(res.is_err());
-    assert!(res.unwrap_err().to_string().contains("STATUS: SIGNED_BY_HUMAN"));
+    assert!(res
+        .unwrap_err()
+        .to_string()
+        .contains("STATUS: SIGNED_BY_HUMAN"));
 
     // Signed brief
     fs::write(
@@ -136,7 +145,10 @@ fn test_gate_4_divergences_check() {
     .unwrap();
     let res = verify_gate_4_divergences_at(temp.path(), "my-service");
     assert!(res.is_err());
-    assert!(res.unwrap_err().to_string().contains("Unapproved divergence"));
+    assert!(res
+        .unwrap_err()
+        .to_string()
+        .contains("Unapproved divergence"));
 
     // Approved divergence
     fs::write(

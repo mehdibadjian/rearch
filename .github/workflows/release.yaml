@@ -1,0 +1,40 @@
+name: Release Please
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: .github/release-please/config.json
+          manifest-file: .github/release-please/manifest.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-crates:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          cargo publish -p rearch-core --token $CARGO_REGISTRY_TOKEN || true
+          cargo publish -p rearch-rea --token $CARGO_REGISTRY_TOKEN || true
+          cargo publish -p rearch-proof --token $CARGO_REGISTRY_TOKEN || true
+          cargo publish -p rearch-cli --token $CARGO_REGISTRY_TOKEN || true

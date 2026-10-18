@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "rearch: bootstrap",
+      "type": "shell",
+      "command": "cargo run --bin rearch -- bootstrap --mode doctor",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "rearch: proof-pack",
+      "type": "shell",
+      "command": "cargo run --bin rearch -- proof-pack ${input:slug}",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "slug",
+      "description": "Target artifact slug",
+      "default": "sample",
+      "type": "promptString"
+    }
+  ]
+}

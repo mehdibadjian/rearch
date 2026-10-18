@@ -74,22 +74,29 @@ pub fn run_proof_pack_at(base_dir: &Path, slug: &str) -> Result<ProofReport> {
         } else {
             format!("Test suite failed ({failed}/{total} tests failed).")
         };
-        return write_and_return(slug, &proof_dir, ProofVerdict::NotProven, total, passed, failed, &reason);
+        return write_and_return(
+            slug,
+            &proof_dir,
+            ProofVerdict::NotProven,
+            total,
+            passed,
+            failed,
+            &reason,
+        );
     }
 
     // 5. Check preflight configuration for live parity vs snapshot
     let preflight_path = analysis_dir.join("preflight.json");
     let preflight: PreflightAnswers = if preflight_path.exists() {
-        serde_json::from_str(&fs::read_to_string(preflight_path)?)
-            .unwrap_or(PreflightAnswers {
-                whole_or_slice: None,
-                can_run_legacy_locally: false,
-                custom_build_tooling: None,
-                prior_attempts: None,
-                off_limits_components: vec![],
-                gate_1_approved: false,
-                legacy_sha256: None,
-            })
+        serde_json::from_str(&fs::read_to_string(preflight_path)?).unwrap_or(PreflightAnswers {
+            whole_or_slice: None,
+            can_run_legacy_locally: false,
+            custom_build_tooling: None,
+            prior_attempts: None,
+            off_limits_components: vec![],
+            gate_1_approved: false,
+            legacy_sha256: None,
+        })
     } else {
         PreflightAnswers {
             whole_or_slice: None,
@@ -121,7 +128,8 @@ fn execute_and_parse_tests(modern_dir: &Path, report_json: &Path) -> Result<(u64
     // If a modern_dir test-results.json exists (mocked or pre-generated)
     let mock_results_path = modern_dir.join("test-results.json");
     if mock_results_path.exists() {
-        let val: serde_json::Value = serde_json::from_str(&fs::read_to_string(&mock_results_path)?)?;
+        let val: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&mock_results_path)?)?;
         let total = val["numTotalTests"].as_u64().unwrap_or(0);
         let passed = val["numPassedTests"].as_u64().unwrap_or(0);
         let failed = val["numFailedTests"].as_u64().unwrap_or(0);

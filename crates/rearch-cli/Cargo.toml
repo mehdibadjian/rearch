@@ -5,6 +5,10 @@ edition.workspace = true
 license.workspace = true
 authors.workspace = true
 
+[lib]
+name = "rearch_cli"
+path = "src/lib.rs"
+
 [[bin]]
 name = "rearch"
 path = "src/main.rs"

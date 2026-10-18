@@ -80,6 +80,7 @@ impl ReaMcpClient {
         tool_name: &str,
         arguments: Value,
     ) -> Result<Value> {
-        self.call_tool_at(Path::new("."), slug, tool_name, arguments).await
+        self.call_tool_at(Path::new("."), slug, tool_name, arguments)
+            .await
     }
 }

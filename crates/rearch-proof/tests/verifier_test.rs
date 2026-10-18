@@ -36,7 +36,11 @@ fn test_verifier_fails_on_unconfirmed_rule_cards() {
         },
     };
 
-    fs::write(rules_dir.join("rule.json"), serde_json::to_string(&card).unwrap()).unwrap();
+    fs::write(
+        rules_dir.join("rule.json"),
+        serde_json::to_string(&card).unwrap(),
+    )
+    .unwrap();
 
     let report = run_proof_pack_at(temp.path(), "sample").unwrap();
     assert_eq!(report.verdict, ProofVerdict::NotProven);
