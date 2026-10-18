@@ -1,0 +1,24 @@
+[package]
+name = "rearch-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "rearch"
+path = "src/main.rs"
+
+[dependencies]
+rearch-core = { path = "../rearch-core" }
+rearch-rea = { path = "../rearch-rea" }
+rearch-proof = { path = "../rearch-proof" }
+clap.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
