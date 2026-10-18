@@ -1,4 +1,4 @@
-name: Release Please
+name: Autonomous Tag & Release
 
 on:
   push:
@@ -6,31 +6,127 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  release-please:
+  autonomous-release:
+    name: Autonomous Tag & Release
     runs-on: ubuntu-latest
-    outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          config-file: .github/release-please/config.json
-          manifest-file: .github/release-please/manifest.json
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  publish-crates:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
-      - name: Publish to crates.io
+
+      - name: Determine Next Semantic Version & Tag
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node -e '
+          const { execSync } = require("child_process");
+
+          // 1. Find latest tag matching v*
+          let latestTag = "";
+          try {
+            const tags = execSync("git tag -l \"v*\" --sort=-v:refname")
+              .toString()
+              .trim()
+              .split("\n")
+              .filter(Boolean);
+            if (tags.length > 0) {
+              latestTag = tags[0];
+            }
+          } catch (e) {
+            console.error("Error finding tags:", e);
+          }
+
+          if (!latestTag) {
+            latestTag = "v1.1.0";
+          }
+
+          // 2. Inspect commits since latestTag
+          let commits = "";
+          try {
+            commits = execSync(`git log ${latestTag}..HEAD --oneline`).toString().trim();
+          } catch (e) {
+            console.error("Error reading git log:", e);
+          }
+
+          console.log(`Latest tag: ${latestTag}`);
+          console.log(`Commits since ${latestTag}:\n${commits || "(none)"}`);
+
+          if (!commits) {
+            console.log("No new commits since latest tag. Skipping release.");
+            process.exit(0);
+          }
+
+          // 3. Determine bump type from conventional commits
+          let bump = "patch";
+          if (/BREAKING CHANGE|feat!|fix!/i.test(commits)) {
+            bump = "major";
+          } else if (/feat(\(.*\))?:/i.test(commits)) {
+            bump = "minor";
+          } else if (/fix(\(.*\))?:|perf(\(.*\))?:|refactor(\(.*\))?:|docs(\(.*\))?:|chore(\(.*\))?:/i.test(commits)) {
+            bump = "patch";
+          }
+
+          const match = latestTag.match(/^v?(\d+)\.(\d+)\.(\d+)$/);
+          if (!match) {
+            console.error(`Invalid tag format: ${latestTag}`);
+            process.exit(1);
+          }
+
+          let [, major, minor, patch] = match.map(Number);
+          if (bump === "major") {
+            major += 1;
+            minor = 0;
+            patch = 0;
+          } else if (bump === "minor") {
+            minor += 1;
+            patch = 0;
+          } else {
+            patch += 1;
+          }
+
+          const nextTag = `v${major}.${minor}.${patch}`;
+          const rawVersion = `${major}.${minor}.${patch}`;
+          console.log(`Autonomous bump (${bump}): ${latestTag} -> ${nextTag}`);
+
+          // 4. Create Git tag directly on main and create GitHub release
+          try {
+            execSync(`git tag ${nextTag}`);
+            execSync(`git push origin ${nextTag}`);
+            console.log(`Successfully pushed tag ${nextTag}`);
+          } catch (e) {
+            console.error("Failed to push git tag:", e.message);
+          }
+
+          try {
+            execSync(`gh release create "${nextTag}" --target "${process.env.GITHUB_SHA}" --title "${nextTag}" --generate-notes`, {
+              stdio: "inherit"
+            });
+            console.log(`Successfully created GitHub Release ${nextTag}`);
+          } catch (e) {
+            console.error("Failed to create GitHub release:", e.message);
+          }
+
+          const fs = require("fs");
+          if (process.env.GITHUB_OUTPUT) {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag_created=true\nnext_tag=${nextTag}\nraw_version=${rawVersion}\n`);
+          }
+          '
+
+      - name: Publish to crates.io (Optional)
+        if: steps.release.outputs.tag_created == 'true' && env.CARGO_REGISTRY_TOKEN != ''
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
