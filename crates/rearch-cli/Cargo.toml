@@ -1,9 +1,9 @@
 [package]
 name = "rearch-cli"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-authors.workspace = true
+version = "1.0.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["rearch contributors"]
 
 [lib]
 name = "rearch_cli"
@@ -14,9 +14,9 @@ name = "rearch"
 path = "src/main.rs"
 
 [dependencies]
-rearch-core = { path = "../rearch-core" }
-rearch-rea = { path = "../rearch-rea" }
-rearch-proof = { path = "../rearch-proof" }
+rearch-core = { path = "../rearch-core", version = "1.0.0" }
+rearch-rea = { path = "../rearch-rea", version = "1.0.0" }
+rearch-proof = { path = "../rearch-proof", version = "1.0.0" }
 clap.workspace = true
 tokio.workspace = true
 serde.workspace = true

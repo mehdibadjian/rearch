@@ -1,6 +1,6 @@
 {
   "packages": {
-    ".": {
+    "crates/rearch-cli": {
       "release-type": "rust",
       "package-name": "rearch-cli"
     },
@@ -16,5 +16,8 @@
       "release-type": "rust",
       "package-name": "rearch-proof"
     }
-  }
+  },
+  "plugins": [
+    "cargo-workspace"
+  ]
 }
