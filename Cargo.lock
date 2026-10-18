@@ -566,7 +566,7 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rearch-cli"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -582,7 +582,7 @@ dependencies = [
 
 [[package]]
 name = "rearch-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -596,7 +596,7 @@ dependencies = [
 
 [[package]]
 name = "rearch-proof"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "askama",
@@ -609,7 +609,7 @@ dependencies = [
 
 [[package]]
 name = "rearch-rea"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "rearch-core",
